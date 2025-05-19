@@ -1,81 +1,149 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
-const PLANS = [
-  {
-    id: "zen",
-    title: "온라인 참선 체험",
-    description: "언제 어디서든 마음을 다스리는 참선",
-    price: "₩9,900 / 월",
-  },
-  {
-    id: "etiquette",
-    title: "전통예절 교육",
-    description: "예절과 마음가짐을 배우는 전통 교육",
-    price: "₩12,000 / 월",
-  },
-  {
-    id: "culture",
-    title: "한국 문화 소개",
-    description: "한국의 아름다움을 느끼는 문화 체험",
-    price: "₩11,000 / 월",
-  },
-  {
-    id: "all",
-    title: "All Plan",
-    description: "세 가지 모든 프로그램을 포함한 통합 패키지",
-    price: "₩27,000 / 월",
-  },
-];
+export default function Contact() {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [posts, setPosts] = useState([]);
+  const [editIndex, setEditIndex] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-export default function Subscribe() {
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const navigate = useNavigate();
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = () => {
-    if (!selectedPlan) {
-      alert("구독할 프로그램을 선택해주세요.");
-      return;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.message) return;
+
+    if (editIndex !== null) {
+      const updated = [...posts];
+      updated[editIndex] = form;
+      setPosts(updated);
+      setEditIndex(null);
+    } else {
+      setPosts([...posts, form]);
     }
-    navigate("/subscribe/checkout", { state: { plan: selectedPlan } });
+
+    setForm({ name: "", email: "", message: "" });
+    setShowForm(false);
+  };
+
+  const handleEdit = (index) => {
+    setForm(posts[index]);
+    setEditIndex(index);
+    setShowForm(true);
+  };
+
+  const handleDelete = (index) => {
+    setPosts(posts.filter((_, i) => i !== index));
   };
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center px-6 py-20"
-      style={{
-        backgroundImage: `url("/assets/temple.jpg")`,
-      }}
+      className="min-h-screen bg-cover bg-center bg-no-repeat px-6 py-20"
+      style={{ backgroundImage: "url('/bg-temple.png')" }}
     >
-      <h2 className="text-4xl font-bold mb-14 text-white text-center drop-shadow-lg">
-        구독할 프로그램을 선택하세요
-      </h2>
+      <div className="bg-stone-100/80 backdrop-blur-sm rounded-xl p-8 max-w-3xl mx-auto shadow-md">
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-        {PLANS.map((plan) => (
-          <div
-            key={plan.id}
-            onClick={() => setSelectedPlan(plan)}
-            className={`cursor-pointer border rounded-2xl py-10 px-6 h-80 flex flex-col justify-between backdrop-blur-md bg-white/80 shadow-xl hover:scale-105 transition duration-300 ${
-              selectedPlan?.id === plan.id ? "ring-4 ring-yellow-500" : ""
-            }`}
-          >
-            <div>
-              <h3 className="text-2xl font-bold mb-3">{plan.title}</h3>
-              <p className="text-gray-700 text-sm">{plan.description}</p>
+        <h2 className="text-3xl font-bold mb-4">문의 게시판</h2>
+
+        {/* 게시글 목록 */}
+        <div className="space-y-4 mb-10">
+          {posts.length === 0 && (
+            <p className="text-gray-500">등록된 문의가 없습니다.</p>
+          )}
+          {posts.map((post, index) => (
+            <div key={index} className="border bg-white p-4 rounded shadow">
+              <p className="font-semibold">{post.name} ({post.email})</p>
+              <p className="mt-2 whitespace-pre-wrap">{post.message}</p>
+              <div className="mt-3 space-x-2">
+                <button
+                  onClick={() => handleEdit(index)}
+                  className="text-blue-600 hover:underline text-sm"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(index)}
+                  className="text-red-600 hover:underline text-sm"
+                >
+                  삭제
+                </button>
+              </div>
             </div>
-            <p className="text-yellow-700 text-lg font-semibold">{plan.price}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <div className="text-center mt-16">
-        <button
-          onClick={handleSubmit}
-          className="bg-yellow-500 text-white text-lg px-10 py-5 rounded-xl hover:bg-yellow-600 transition font-semibold shadow-lg"
-        >
-          구독 신청 및 결제하기
-        </button>
+        {/* 토글 버튼 */}
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-emerald-700 hover:bg-emerald-800 text-white px-6 py-2 rounded-lg transition-all"
+          >
+            문의하기
+          </button>
+        )}
+
+        {/* 문의 폼 */}
+        {showForm && (
+          <form onSubmit={handleSubmit} className="space-y-6 mt-10 text-gray-800 font-serif">
+          <div>
+            <label className="block text-sm font-medium mb-1">이름</label>
+            <input
+              type="text"
+              name="name"
+              placeholder="홍길동"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full bg-white/60 border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/80"
+            />
+          </div>
+        
+          <div>
+            <label className="block text-sm font-medium mb-1">이메일</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="example@email.com"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full bg-white/60 border border-gray-300 px-4 py-2 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/80"
+            />
+          </div>
+        
+          <div>
+            <label className="block text-sm font-medium mb-1">문의 내용</label>
+            <textarea
+              name="message"
+              placeholder="어떤 점이 궁금하신가요?"
+              value={form.message}
+              onChange={handleChange}
+              className="w-full bg-white/60 border border-gray-300 px-4 py-2 rounded-lg shadow-sm h-32 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/80"
+            ></textarea>
+          </div>
+        
+          <div className="flex space-x-4 justify-end">
+            <button
+              type="submit"
+              className="bg-indigo-700 text-white px-6 py-2 rounded-lg hover:bg-indigo-800 transition-all"
+            >
+              {editIndex !== null ? "수정 완료" : "등록"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowForm(false);
+                setForm({ name: "", email: "", message: "" });
+                setEditIndex(null);
+              }}
+              className="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500 transition-all"
+            >
+              취소
+            </button>
+          </div>
+        </form>
+        
+        )}
       </div>
     </div>
   );
